@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Employee Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f7f6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .logout {
+            background: #dc3545;
+            margin-left: auto;
+            width: auto;
+            padding: 5px 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Generate Bill</h2>
+            <button class="logout" onclick="logout()">Logout</button>
+        </div>
+
+        <label>Service Number</label>
+        <input type="text" id="serviceNumber" placeholder="Enter User Service SCxxxxxx">
+
+        <label>Current Reading (Units)</label>
+        <input type="number" id="currentReading" placeholder="Enter Meter Reading">
+
+        <button onclick="generate()">Generate Bill</button>
+
+        <div id="result" class="result">
+            <h3>Bill Generated</h3>
+            <p><strong>Amount:</strong> ₹<span id="res-amount"></span></p>
+            <p><strong>Units Consumed:</strong> <span id="res-units"></span></p>
+            <p><strong>Service Charge:</strong> ₹<span id="res-charge"></span></p>
+            <p><strong>Total:</strong> ₹<span id="res-total"></span></p>
+        </div>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || user.role !== 'employee') window.location.href = 'login.html';
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        async function generate() {
+            const serviceNumber = document.getElementById('serviceNumber').value;
+            const currentReading = document.getElementById('currentReading').value;
+            const resDiv = document.getElementById('result');
+
+            try {
+                const res = await fetch('http://localhost:3000/bill/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ serviceNumber, currentReading })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    resDiv.style.display = 'block';
+                    resDiv.style.background = '#d4edda';
+                    document.getElementById('res-amount').innerText = (data.bill.amount - data.bill.serviceCharge).toFixed(2);
+                    document.getElementById('res-units').innerText = data.bill.units;
+                    document.getElementById('res-charge').innerText = data.bill.serviceCharge;
+                    document.getElementById('res-total').innerText = data.bill.amount.toFixed(2);
+                } else {
+                    alert(data.error);
+                    resDiv.style.display = 'none';
+                }
+            } catch (err) {
+                alert("Error generating bill");
+            }
+        }
+    </script>
+</body>
+
+</html>

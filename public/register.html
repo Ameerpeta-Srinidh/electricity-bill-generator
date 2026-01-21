@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Register - Electricity Bill System</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f7f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    form {
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #218838;
+    }
+
+    .msg {
+      color: #d9534f;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .link {
+      text-align: center;
+      margin-top: 15px;
+      display: block;
+      color: #007bff;
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+  <form id="regForm" onsubmit="return false;">
+    <h2>New Connection Application</h2>
+    <input type="text" id="fullName" placeholder="Full Name" required>
+    <input type="email" id="email" placeholder="Email Address" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <input type="text" id="mobileNo" placeholder="Mobile Number (10 digits)" pattern="[0-9]{10}" required>
+
+    <label>Connection Type:</label>
+    <select id="connectionType">
+      <option value="household">Household</option>
+      <option value="commercial">Commercial</option>
+      <option value="industry">Industry</option>
+    </select>
+
+
+
+    <h4>Address</h4>
+    <input type="text" id="houseNo" placeholder="House No">
+    <input type="text" id="locality" placeholder="Locality">
+    <input type="text" id="city" placeholder="City">
+    <input type="text" id="state" placeholder="State">
+    <input type="text" id="pincode" placeholder="Pincode" pattern="[0-9]{6}">
+
+    <button onclick="register()">Submit Application</button>
+    <p id="msg" class="msg"></p>
+    <a href="login.html" class="link">Already have an account? Login</a>
+  </form>
+
+  <script>
+    async function register() {
+      const data = {
+        fullName: document.getElementById('fullName').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        mobileNo: document.getElementById('mobileNo').value,
+        connectionType: document.getElementById('connectionType').value,
+        address: {
+          houseNo: document.getElementById('houseNo').value,
+          locality: document.getElementById('locality').value,
+          city: document.getElementById('city').value,
+          state: document.getElementById('state').value,
+          pincode: document.getElementById('pincode').value
+        }
+      };
+
+      try {
+        const res = await fetch("http://localhost:3000/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+
+        const msgEl = document.getElementById('msg');
+        if (res.ok) {
+          msgEl.style.color = 'green';
+          msgEl.innerText = result.message;
+          document.getElementById('regForm').reset();
+        } else {
+          msgEl.style.color = '#d9534f';
+          msgEl.innerText = result.error;
+        }
+      } catch (e) {
+        document.getElementById('msg').innerText = "Registration Failed";
+      }
+    }
+  </script>
+</body>
+
+</html>

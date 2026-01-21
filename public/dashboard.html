@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Dashboard</title>
+  <style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f7f6;
+        color: #333;
+        max-width: 500px;
+        margin: 50px auto; 
+        padding: 30px;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+        color: rgb(45, 45, 63);
+        text-align: center;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+    }
+    h3 {
+        color: #007bff;
+        font-size: 1.2rem;
+        margin-top: 30px;
+        margin-bottom: 10px;
+        border-left: 4px solid #007bff; 
+        padding-left: 10px;
+    }
+    p {
+        font-size: 16px;
+        margin: 12px 0;
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px dashed #eee;
+        padding-bottom: 5px;
+    }
+
+    span {
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    input {
+        width: 100%;
+        padding: 12px;
+        margin-top: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+        box-sizing: border-box;
+    }
+
+    input:focus {
+        border-color: #007bff;
+        outline: none;
+    }
+    button {
+        width: 100%;
+        padding: 12px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 15px;
+        transition: background-color 0.3s;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+
+    #result {
+        text-align: center;
+        background-color: #e8f5e9; 
+        color: #2e7d32;
+        padding: 15px;
+        border-radius: 5px;
+        border: none; 
+        border-left: none;
+        font-size: 1.1rem;
+    }
+
+    ul#history {
+        list-style-type: none;
+        padding: 0;
+        margin-top: 10px;
+    }
+
+    ul#history li {
+        background-color: #fafafa;
+        border: 1px solid #eee;
+        padding: 10px 15px;
+        margin-bottom: 8px;
+        border-radius: 5px;
+        font-size: 14px;
+        color: #555;
+        transition: transform 0.2s;
+    }
+
+    ul#history li:hover {
+        background-color: #fff;
+        border-color: #ccc;
+        transform: translateX(5px); 
+    }
+</style>
+</head>
+
+
+<body>
+  <h2>Generate Electricity Bill</h2>
+
+  <p>Meter ID: <span id="display-meter"></span></p>
+  <p>Last Recorded Reading: <span id="display-last"></span></p>
+
+  <input id="reading" type="number" placeholder="Enter Current Reading"><br><br>
+
+  <button onclick="generateBill()">Generate Bill</button>
+
+  <h3 id="result"></h3>
+
+  <h3>Bill History</h3>
+  <ul id="history"></ul>
+
+  <script>
+    const meterID = localStorage.getItem("meterID");
+    const lastUnits = localStorage.getItem("currentUnits");
+
+    document.getElementById("display-meter").innerText = meterID;
+    document.getElementById("display-last").innerText = lastUnits;
+
+    async function generateBill() {
+      const currentReading = document.getElementById("reading").value;
+
+      const res = await fetch("http://localhost:3000/bill/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ meterID, currentReading })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        document.getElementById("result").innerText =
+          `Units Consumed: ${data.units}, Amount: ₹${data.amount}`;
+        localStorage.setItem("currentUnits", data.currentReading);
+        document.getElementById("display-last").innerText = data.currentReading;
+
+        loadHistory();
+      } else {
+        document.getElementById("result").innerText = "Error: " + data.error;
+      }
+    }
+
+    async function loadHistory() {
+      const res = await fetch(
+        "http://localhost:3000/bill/history/" + meterID
+      );
+      const bills = await res.json();
+
+      const list = document.getElementById("history");
+      list.innerHTML = "";
+
+      bills.forEach(b => {
+        const li = document.createElement("li");
+        li.innerText = `${b.month || 'Unknown Date'} - ${b.units} units - ₹${b.amount}`;
+        list.appendChild(li);
+      });
+    }
+
+    loadHistory();
+  </script>
+</body>
+
+</html>

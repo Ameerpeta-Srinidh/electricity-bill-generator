@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f7f6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-logout {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .approve-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .approve-btn:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Pending Applications</h2>
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+        <div id="content">Loading...</div>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || user.role !== 'admin') window.location.href = 'login.html';
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+
+        async function loadApplications() {
+            try {
+                const resPending = await fetch('http://localhost:3000/admin/applications?status=pending');
+                const pendingApps = await resPending.json();
+
+                const resApproved = await fetch('http://localhost:3000/admin/applications?status=approved');
+                const approvedUsers = await resApproved.json();
+
+                const content = document.getElementById('content');
+                let html = "";
+
+                if (pendingApps.length > 0) {
+                    html += "<h3>Pending Requests</h3><table><thead><tr><th>Name</th><th>Role</th><th>Email</th><th>Connection</th><th>Action</th></tr></thead><tbody>";
+                    pendingApps.forEach(app => {
+                        html += `<tr>
+                            <td>${app.fullName}</td>
+                            <td>${app.role}</td>
+                            <td>${app.email}</td>
+                            <td>${app.connectionType}</td>
+                            <td><button class="approve-btn" onclick="approve('${app._id}')">Approve</button></td>
+                        </tr>`;
+                    });
+                    html += "</tbody></table>";
+                } else {
+                    html += "<h3>Pending Requests</h3><p>No pending applications.</p>";
+                }
+
+                html += "<h3>Approved Users (Active Connections)</h3>";
+                if (approvedUsers.length > 0) {
+                    html += "<table><thead><tr><th>Service No</th><th>Name</th><th>Role</th><th>Email</th><th>Connection</th></tr></thead><tbody>";
+                    approvedUsers.forEach(user => {
+                        html += `<tr>
+                            <td><strong>${user.serviceNumber}</strong></td>
+                            <td>${user.fullName}</td>
+                            <td>${user.role}</td>
+                            <td>${user.email}</td>
+                            <td>${user.connectionType}</td>
+                        </tr>`;
+                    });
+                    html += "</tbody></table>";
+                } else {
+                    html += "<p>No active connections.</p>";
+                }
+
+                content.innerHTML = html;
+            } catch (err) {
+                console.error(err);
+                document.getElementById('content').innerText = "Error loading data.";
+            }
+        }
+
+        async function approve(id) {
+            if (!confirm("Approve this application?")) return;
+
+            try {
+                const res = await fetch('http://localhost:3000/admin/approve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Approved! Service Number: ' + data.serviceNumber);
+                    loadApplications();
+                } else {
+                    alert(data.error);
+                }
+            } catch (err) {
+                alert("Error approving.");
+            }
+        }
+
+        loadApplications();
+    </script>
+</body>
+
+</html>
