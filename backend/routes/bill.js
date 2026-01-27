@@ -5,61 +5,52 @@ const User = require("../models/Application");
 const router = express.Router();
 
 
+const SLAB_RATES = {
+  household: {
+    serviceCharge: 25,
+    slabs: [
+      { limit: 50, rate: 1.5 },
+      { limit: 50, rate: 2.0 },
+      { limit: 50, rate: 2.5 },
+      { limit: 50, rate: 3.0 },
+      { limit: 50, rate: 3.5 },
+      { limit: 50, rate: 4.0 },
+      { limit: Infinity, rate: 4.5 }
+    ]
+  },
+  commercial: {
+    serviceCharge: 50,
+    slabs: [
+      { limit: 50, rate: 2.5 },
+      { limit: 50, rate: 3.5 },
+      { limit: 50, rate: 4.5 },
+      { limit: 50, rate: 5.5 },
+      { limit: 50, rate: 6.5 },
+      { limit: 50, rate: 7.5 },
+      { limit: Infinity, rate: 8.5 }
+    ]
+  },
+  industry: {
+    serviceCharge: 75,
+    slabs: [
+      { limit: 50, rate: 3.5 },
+      { limit: 50, rate: 5.5 },
+      { limit: 50, rate: 7.5 },
+      { limit: 50, rate: 9.5 },
+      { limit: 50, rate: 11.5 },
+      { limit: 50, rate: 13.5 },
+      { limit: Infinity, rate: 15.5 }
+    ]
+  }
+};
+
 function calculateBill(units, connectionType) {
   let amount = 0;
-  let serviceCharge = 0;
   let remainingUnits = units;
 
-  const slabs = {
-    household: [
-      { limit: 100, rate: 5 },
-      { limit: 50, rate: 6 },
-      { limit: 50, rate: 7 },
-      { limit: Infinity, rate: 8 }
-    ],
-    commercial: [
-      { limit: 100, rate: 10 },
-      { limit: Infinity, rate: 15 }
-    ],
-    industry: [
-      { limit: 100, rate: 15 },
-      { limit: 100, rate: 18 },
-      { limit: Infinity, rate: 20 }
-    ]
-  };
-
-  let currentSlabs = [];
-
-  switch (connectionType) {
-    case 'household':
-      serviceCharge = 50;
-      currentSlabs = [
-        { limit: 100, rate: 5 },
-        { limit: 50, rate: 6 }, 
-        { limit: 50, rate: 7 }, 
-        { limit: Infinity, rate: 8 } 
-      ];
-      break;
-    case 'commercial':
-      serviceCharge = 100;
-      currentSlabs = [
-        { limit: 100, rate: 10 },
-        { limit: 100, rate: 12 }, 
-        { limit: Infinity, rate: 15 }
-      ];
-      break;
-    case 'industry':
-      serviceCharge = 200;
-      currentSlabs = [
-        { limit: 100, rate: 15 },
-        { limit: 100, rate: 18 },
-        { limit: Infinity, rate: 20 }
-      ];
-      break;
-    default:
-      serviceCharge = 70;
-      currentSlabs = [{ limit: Infinity, rate: 8 }];
-  }
+  const typeConfig = SLAB_RATES[connectionType];
+  const serviceCharge = typeConfig ? typeConfig.serviceCharge : 0;
+  const currentSlabs = typeConfig ? typeConfig.slabs : [];
 
   for (const slab of currentSlabs) {
     if (remainingUnits <= 0) break;
@@ -143,8 +134,8 @@ router.post("/pay/:id", async (req, res) => {
 
     const now = new Date();
     if (now > bill.dueDate) {
-      bill.fineAmount = 100;
-      bill.amount += 100;
+      bill.fineAmount = 150;
+      bill.amount += 150;
       bill.status = 'overdue';
     }
 
@@ -165,11 +156,7 @@ router.get("/history/:serviceNumber", async (req, res) => {
 });
 
 router.get("/rates", (req, res) => {
-  res.json({
-    household: { rate: 5, serviceCharge: 50 },
-    commercial: { rate: 10, serviceCharge: 100 },
-    industry: { rate: 15, serviceCharge: 200 }
-  });
+  res.json(SLAB_RATES);
 });
 
 module.exports = router;

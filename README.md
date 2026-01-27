@@ -15,6 +15,11 @@ A full-stack web application for managing electricity connections, generating bi
 -   **Backend**: Node.js, Express.js
 -   **Database**: MongoDB
 
+## Documentation
+-   [Module Specifications](docs/MODULE_SPECS.md)
+-   [System Logic](docs/LOGIC.md)
+-   [Test Plan](docs/TEST_PLAN.md)
+
 ## Setup
 
 1.  **Install Dependencies**:

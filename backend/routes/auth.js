@@ -7,6 +7,16 @@ router.post("/register", async (req, res) => {
   try {
     const { fullName, mobileNo, email, connectionType, password, address } = req.body;
 
+    // Validation: Name must be alphabets only
+    if (!/^[A-Za-z\s]+$/.test(fullName)) {
+      return res.status(400).json({ error: "Name must contain only alphabets." });
+    }
+
+    // Validation: Phone number must be exactly 10 digits
+    if (!/^\d{10}$/.test(mobileNo)) {
+      return res.status(400).json({ error: "Mobile number must be exactly 10 digits." });
+    }
+
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ error: "Email already registered" });
 

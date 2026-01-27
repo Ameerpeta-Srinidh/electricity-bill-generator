@@ -26,7 +26,16 @@ router.post("/approve", async (req, res) => {
             return res.status(400).json({ error: "Application is not pending" });
         }
 
-        const serviceNumber = "SC" + Math.floor(100000 + Math.random() * 900000);
+        let serviceNumber;
+        let isUnique = false;
+
+        while (!isUnique) {
+            serviceNumber = "SC" + Math.floor(100000 + Math.random() * 900000);
+            const existingUser = await User.findOne({ serviceNumber });
+            if (!existingUser) {
+                isUnique = true;
+            }
+        }
 
         user.status = "approved";
         user.serviceNumber = serviceNumber;
