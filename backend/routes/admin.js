@@ -31,8 +31,8 @@ router.post("/approve", async (req, res) => {
 
         while (!isUnique) {
             serviceNumber = "SC" + Math.floor(100000 + Math.random() * 900000);
-            const existingUser = await User.findOne({ serviceNumber });
-            if (!existingUser) {
+            const duplicate = await User.findOne({ serviceNumber });
+            if (!duplicate) {
                 isUnique = true;
             }
         }

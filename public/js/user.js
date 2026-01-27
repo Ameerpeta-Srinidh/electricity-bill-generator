@@ -15,8 +15,8 @@ async function loadDashboard() {
     document.getElementById('userUnits').innerText = user.currentUnits;
 
     try {
-        const rates = await Api.get('/bill/rates');
-        window.slabRates = rates; // Store for showRates usage
+        const rates = await apiGet('/bill/rates');
+        window.slabRates = rates;
         const myRateConfig = rates[user.connectionType];
 
         if (myRateConfig && myRateConfig.slabs && myRateConfig.slabs.length > 0) {
@@ -24,7 +24,7 @@ async function loadDashboard() {
             document.getElementById('userServiceFee').innerText = Utils.formatCurrency(myRateConfig.serviceCharge);
         }
 
-        const bills = await Api.get(`/bill/history/${user.serviceNumber}`);
+        const bills = await apiGet(`/bill/history/${user.serviceNumber}`);
         window.allBills = bills;
 
         if (bills.length === 0) {
@@ -68,7 +68,7 @@ async function pay(id) {
     if (!confirm("Confirm Payment?")) return;
 
     try {
-        const data = await Api.post(`/bill/pay/${id}`, {});
+        const data = await apiPost(`/bill/pay/${id}`, {});
         alert("Payment Successful!");
         loadDashboard();
     } catch (e) {
@@ -81,8 +81,6 @@ function downloadReceipt(billId) {
     if (!bill) return;
 
     const win = window.open('', '', 'width=600,height=600');
-    // ... receipt generation code could be further modularized or potentially moved to backend template ... 
-    // keeping it inline but using data from utils
     const content = `
         <!DOCTYPE html>
         <html>
@@ -138,22 +136,15 @@ function showRates() {
     if (!window.slabRates) return alert("Rates not loaded yet.");
 
     let msg = "Current Slab Rates:\n\n";
-
-    // Helper to format slabs
     const formatSlabs = (slabs) => {
         return slabs.map((s, i) => {
             if (s.limit === Infinity) return `> ${slabs[i - 1] ? 0 + slabs.slice(0, i).reduce((a, b) => a + b.limit, 0) : 0} Units: ₹${s.rate}`;
-            // Simplified view logic: logic is actually incremental, but for display let's show the ranges
-            // Calculating cumulative ranges for display is tricky without more logic. 
-            // Let's stick to the "Next X units @ Rate Y" format which is accurate to the logic
             return `Next ${s.limit} Units: ₹${s.rate}`;
         }).join('\n');
     };
 
-    // Better display logic matching the object structure
     for (const [type, config] of Object.entries(window.slabRates)) {
         msg += `${type.toUpperCase()} (Service Charge: ₹${config.serviceCharge}):\n`;
-        // We can make the display slightly smarter
         let currentCount = 0;
         config.slabs.forEach(s => {
             if (s.limit === Infinity) {
@@ -169,11 +160,10 @@ function showRates() {
     alert(msg);
 }
 
-// Make functions global for onclick events
 window.pay = pay;
 window.downloadReceipt = downloadReceipt;
 window.showRates = showRates;
 window.logout = Utils.logout;
 
-// Initialize
+
 loadDashboard();

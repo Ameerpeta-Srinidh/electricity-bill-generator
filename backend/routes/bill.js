@@ -54,8 +54,11 @@ function calculateBill(units, connectionType) {
 
   for (const slab of currentSlabs) {
     if (remainingUnits <= 0) break;
+
     const unitsInSlab = Math.min(remainingUnits, slab.limit);
+
     amount += unitsInSlab * slab.rate;
+
     remainingUnits -= unitsInSlab;
   }
 

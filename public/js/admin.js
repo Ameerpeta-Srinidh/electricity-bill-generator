@@ -6,8 +6,8 @@ function logout() {
 
 async function loadApplications() {
     try {
-        const pendingApps = await Api.get('/admin/applications?status=pending');
-        const approvedUsers = await Api.get('/admin/applications?status=approved');
+        const pendingApps = await apiGet('/admin/applications?status=pending');
+        const approvedUsers = await apiGet('/admin/applications?status=approved');
 
         const content = document.getElementById('content');
         let html = "";
@@ -64,7 +64,7 @@ async function approve(id) {
     }
 }
 
-// Make functions global
+
 window.approve = approve;
 window.logout = logout;
 

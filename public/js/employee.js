@@ -25,6 +25,5 @@ async function generate() {
     }
 }
 
-// Global functions
 window.generate = generate;
 window.logout = logout;

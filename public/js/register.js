@@ -18,7 +18,6 @@ function register() {
         return;
     }
 
-    // Validation: Name must be alphabets only
     const nameRegex = /^[A-Za-z\s]+$/;
     if (!nameRegex.test(fullName)) {
         document.getElementById('msg').innerText = "Name must contain only alphabets.";
@@ -26,10 +25,24 @@ function register() {
         return;
     }
 
-    // Validation: Phone number must be exactly 10 digits
+
     const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(mobileNo)) {
         document.getElementById('msg').innerText = "Mobile number must be exactly 10 digits.";
+        document.getElementById('msg').style.color = '#d9534f';
+        return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        document.getElementById('msg').innerText = "Please enter a valid email address.";
+        document.getElementById('msg').style.color = '#d9534f';
+        return;
+    }
+
+    const PinCodeRegex = /^[0-9]{6}$/;
+    if (address.pincode && !PinCodeRegex.test(address.pincode)) {
+        document.getElementById('msg').innerText = "Pincode must be exactly 6 digits.";
         document.getElementById('msg').style.color = '#d9534f';
         return;
     }
@@ -43,7 +56,7 @@ function register() {
         address
     };
 
-    Api.post('/auth/register', data)
+    apiPost('/auth/register', data)
         .then(res => {
             const msgEl = document.getElementById('msg');
             msgEl.style.color = 'green';

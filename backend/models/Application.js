@@ -10,6 +10,7 @@ const applicationSchema = new mongoose.Schema({
     mobileNo: {
         type: String,
         required: true,
+        unique: [true, "mobile number already exists"],
         match: [/^[0-9]{10}$/, 'Please enter a valid 10-digit mobile number']
     },
     email: {
@@ -55,7 +56,13 @@ const applicationSchema = new mongoose.Schema({
         },
         pincode: {
             type: String,
-            match: [/^[0-9]{6}$/, 'Please enter a valid 6-digit pincode']
+            match: [/^[0-9]{6}$/, 'Please enter a valid 6-digit pincode'],
+            validate: {
+                validator: function (v) {
+                    return /^[0-9]{6}$/.test(v);
+                },
+                message: 'Please enter a valid 6-digit pincode'
+            }
         }
     },
     created: {
