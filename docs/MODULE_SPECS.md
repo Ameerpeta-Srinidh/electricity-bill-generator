@@ -35,7 +35,7 @@ FUNCTION login(email, password):
 ### Calculation Algorithm
 ```
 CONST SLAB_RATES = {
-  household: [{50, 1.5}, {50, 2.5}, {50, 3.5}, {Infinity, 4.5}],
+  household: [{50, 1.5}, {50, 2}, {50, 2.5}, {50, 3},{50,3.5},{50,4},{Infinity,4.5}],
   commercial: [{50, 2.5}, ..., {Infinity, 8.5}],
   industry: [{50, 3.5}, ..., {Infinity, 15.5}]
 }
